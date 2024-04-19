@@ -1,12 +1,20 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+export const roundsOfHashing = 10;
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  createUser(data: Prisma.UserCreateInput) {
+  async createUser(data: Prisma.UserCreateInput) {
+    const hashedPassword = await bcrypt.hash(
+      data.password,
+      roundsOfHashing,
+    );
+
+    data.password = hashedPassword;
     return this.prisma.user.create({
       data,
     });
