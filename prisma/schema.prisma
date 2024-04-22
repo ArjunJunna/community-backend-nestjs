@@ -8,11 +8,93 @@ datasource db {
 }
 
 model User {
-  id    String     @id @default(uuid())
-  username String @unique
-  password String @unique
-  email String?  @unique
-  image String?
+  id            String         @id @default(uuid())
+  username      String        @unique
+  password      String         @unique
+  email         String?        @unique
+  image         String?
+  createdForums Forum[]        @relation("CreatedBy")
+  subscriptions Subscription[]
+  votes         Vote[]
+  post          Post[]
+  comment       Comment[]
+  commentVote   CommentVote[]
 }
 
- 
+model Forum {
+  id          String         @id @default(uuid())
+  name        String         @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  posts       Post[]
+  creatorId   String?
+  creator     User?          @relation("CreatedBy", fields: [creatorId], references: [id])
+  subscribers Subscription[]
+
+  @@index([name])
+}
+
+model Subscription {
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  forum   Forum  @relation(fields: [forumId], references: [id])
+  forumId String
+
+  @@id([userId, forumId])
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  content   Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
+  forum     Forum     @relation(fields: [forumId], references: [id])
+  forumId   String
+  comments  Comment[]
+  votes     Vote[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  text      String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+
+  replyToId String?
+  replyTo   Comment?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Comment[] @relation("ReplyTo")
+
+  votes     CommentVote[]
+  commentId String?
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
+model Vote {
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+  type   VoteType
+
+  @@id([userId, postId])
+}
+
+model CommentVote {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  type      VoteType
+
+  @@id([userId, commentId])
+}
