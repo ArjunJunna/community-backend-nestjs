@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Param,
@@ -12,6 +13,8 @@ import {
 import { ForumService } from './forum.service';
 import { CreateForumDto } from './dtos/CreateForum.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
+import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
 
 @Controller('forums')
 export class ForumController {
@@ -43,4 +46,24 @@ export class ForumController {
   return this.forumService.deleteForumById(id); 
   }
   */
+  @Post(':forumId/subscribe')
+  @UseGuards(JwtAuthGuard)
+  async subscribeToForum(
+    @Body() subscribeToForumDto: SubscribeToForumDto,
+    @Param('forumId') forumId: string,
+  ) {
+    return this.forumService.subscribeUserToForum(subscribeToForumDto, forumId);
+  }
+
+  @Delete(':forumId/subscribe')
+  @UseGuards(JwtAuthGuard)
+  async unsubscribeFromForum(
+    @Body() unsubscribeFromForumDto: UnsubscribeFromForumDto,
+    @Param('forumId') forumId: string,
+  ) {
+    return this.forumService.unsubscribeUserFromForum(
+      unsubscribeFromForumDto,
+      forumId,
+    );
+  }
 }

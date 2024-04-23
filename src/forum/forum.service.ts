@@ -1,6 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateForumDto } from './dtos/CreateForum.dto';
+import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
+import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 
 @Injectable()
 export class ForumService {
@@ -64,4 +66,36 @@ export class ForumService {
     if (!findForum) throw new HttpException('Forum not found', 404);
     return this.prisma.forum.delete({ where: { id } });
   }*/
+  subscribeUserToForum(
+    subscribeToForumDto: SubscribeToForumDto,
+    forumId: string,
+  ) {
+    return this.prisma.subscription.create({
+      data: {
+        userId: subscribeToForumDto.userId,
+        forumId,
+      },
+    });
+  }
+
+  unsubscribeUserFromForum(
+    unsubscribeFromForumDto: UnsubscribeFromForumDto,
+    forumId: string,
+  ) {
+    return this.prisma.subscription.deleteMany({
+      where: {
+        userId: unsubscribeFromForumDto.userId,
+        forumId,
+      },
+    });
+  }
+
+ 
+  getAllSubscriptionsByForumId(forumId: string) {
+    return this.prisma.subscription.findMany({
+      where: {
+        forumId,
+      },
+    });
+  }
 }

@@ -9,10 +9,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async createUser(data: Prisma.UserCreateInput) {
-    const hashedPassword = await bcrypt.hash(
-      data.password,
-      roundsOfHashing,
-    );
+    const hashedPassword = await bcrypt.hash(data.password, roundsOfHashing);
 
     data.password = hashedPassword;
     return this.prisma.user.create({
@@ -36,14 +33,14 @@ export class UsersService {
   getUserById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
-       include:{
-        comment:true,
-        createdForums:true,
-        post:true,
-        subscriptions:true,
-        votes:true,
-        commentVote:true
-      }
+      include: {
+        comment: true,
+        createdForums: true,
+        post: true,
+        subscriptions: true,
+        votes: true,
+        commentVote: true,
+      },
     });
   }
 
@@ -64,5 +61,26 @@ export class UsersService {
       if (findUser) throw new HttpException('Username already taken', 400);
     }
     return this.prisma.user.update({ where: { id }, data });
+  }
+
+  async getAllSubscriptionsByUserId(userId: string) {
+    const subscriptions= await this.prisma.subscription.findMany({
+      where: {
+        userId,
+      },
+    });
+    if(subscriptions.length==0) throw new HttpException('User has no subscriptions',400)
+    const subscriptionsWithForumDetails = await Promise.all(
+      subscriptions.map(async (subscription) => {
+        const forum = await this.prisma.forum.findUnique({
+          where: {
+            id: subscription.forumId,
+          },
+        });
+        return forum
+      }),
+    );
+
+    return subscriptionsWithForumDetails;
   }
 }

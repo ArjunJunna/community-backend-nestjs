@@ -54,4 +54,11 @@ export class UsersController {
   deleteUserById(@Param('id') id: string) {
     return this.usersService.deleteUserById(id);
   }
+
+  @Get(':id/subscribe')
+  @UseGuards(JwtAuthGuard)
+  getUserSubscriptionsById(@Param('id') id: string) {
+    return this.usersService.getAllSubscriptionsByUserId(id);
+   
+  }
 }
