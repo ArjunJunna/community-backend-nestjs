@@ -21,12 +21,29 @@ export class UsersService {
   }
 
   getUsers() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      include: {
+        comment: true,
+        createdForums: true,
+        post: true,
+        subscriptions: true,
+        votes: true,
+        commentVote: true,
+      },
+    });
   }
 
   getUserById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
+       include:{
+        comment:true,
+        createdForums:true,
+        post:true,
+        subscriptions:true,
+        votes:true,
+        commentVote:true
+      }
     });
   }
 
