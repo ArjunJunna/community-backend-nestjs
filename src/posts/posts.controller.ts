@@ -15,6 +15,8 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CastVoteDto } from './dto/cast-vote.dto';
+import { VoteType } from '@prisma/client';
 
 @Controller('posts')
 export class PostsController {
@@ -33,7 +35,7 @@ export class PostsController {
     if (!post) throw new HttpException('Post Not Found', 404);
     return post;
   }
-  
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   updateUserById(
@@ -47,5 +49,20 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   deleteUserById(@Param('id') id: string) {
     return this.postsService.deletePostById(id);
+  }
+
+  @Post(':id/upvote')
+  @UseGuards(JwtAuthGuard)
+  async upvotePost(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
+    return await this.postsService.upvotePost(id, castVoteDto, VoteType.UP);
+  }
+
+  @Delete(':id/downvote')
+  @UseGuards(JwtAuthGuard)
+  async downvotePost(
+    @Param('id') id: string,
+    @Body() castVoteDto: CastVoteDto,
+  ) {
+    return await this.postsService.downvotePost(id, castVoteDto, VoteType.DOWN);
   }
 }
