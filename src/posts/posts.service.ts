@@ -3,6 +3,8 @@ import { Prisma, VoteType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class PostsService {
@@ -94,7 +96,6 @@ export class PostsService {
           userId_postId: {
             userId,
             postId,
-            
           },
         },
       });
@@ -115,4 +116,33 @@ export class PostsService {
 
     return votes;
   }
+
+  createCommentToPost(postId: string, data: CreateCommentDto) {
+    return this.prisma.comment.create({
+      data: {
+        postId,
+        authorId: data.authorId,
+        text: data.text,
+      },
+    });
+  }
+
+  updateCommentById(commentId: string, data: UpdateCommentDto) {
+    return this.prisma.comment.update({
+      where: {
+        id: commentId,
+      },
+      data,
+    });
+  }
+
+  deleteCommentById(commentId: string) {
+    return this.prisma.comment.delete({
+      where: {
+        id: commentId,
+      }
+    });
+  }
+
 }
+
