@@ -27,6 +27,8 @@ model Forum {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   posts       Post[]
+  description String?
+  image       String?
   creatorId   String?
   creator     User?          @relation("CreatedBy", fields: [creatorId], references: [id])
   subscribers Subscription[]
@@ -47,6 +49,7 @@ model Post {
   id        String    @id @default(uuid())
   title     String
   content   Json?
+  image     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   author    User      @relation(fields: [authorId], references: [id])

@@ -24,6 +24,11 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @Get()
+  getAllPosts(){
+    return this.postsService.getAllPosts()
+  }
+
   @Post()
   @UsePipes(ValidationPipe)
   createPost(@Body() createPostDto: CreatePostDto) {

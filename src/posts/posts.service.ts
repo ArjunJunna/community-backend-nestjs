@@ -10,6 +10,49 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class PostsService {
   constructor(private prisma: PrismaService) {}
 
+  getAllPosts() {
+    return this.prisma.post.findMany({
+      select: {
+        title: true,
+        id: true,
+        content: true,
+        image: true,
+        createdAt: true,
+        comments: {
+          select: {
+            text: true,
+            author: {
+              select: {
+                username: true,
+                image: true,
+              },
+            },
+            createdAt: true,
+          },
+        },
+        votes: {
+          select: {
+            type: true,
+          },
+        },
+        author: {
+          select: {
+            username: true,
+            image: true,
+          },
+        },
+        forum: {
+          select: {
+            name: true,
+            image: true,
+            description: true,
+            _count: true,
+          },
+        },
+      },
+    });
+  }
+
   createPost(data: Prisma.PostCreateManyInput) {
     return this.prisma.post.create({
       data: {
@@ -140,9 +183,7 @@ export class PostsService {
     return this.prisma.comment.delete({
       where: {
         id: commentId,
-      }
+      },
     });
   }
-
 }
-
