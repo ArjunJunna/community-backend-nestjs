@@ -38,6 +38,38 @@ export class ForumService {
     const forums = await this.prisma.forum.findMany({
       include: {
         subscribers: true,
+        posts: {
+          select: {
+            title: true,
+            id: true,
+            content: true,
+            image: true,
+            createdAt: true,
+            comments: {
+              select: {
+                text: true,
+                author: {
+                  select: {
+                    username: true,
+                    image: true,
+                  },
+                },
+                createdAt: true,
+              },
+            },
+            votes: {
+              select: {
+                type: true,
+              },
+            },
+            author: {
+              select: {
+                username: true,
+                image: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -45,11 +77,15 @@ export class ForumService {
       return {
         id: forum.id,
         name: forum.name,
+        description:forum.description,
+        image:forum.image,
         subscribersCount: forum.subscribers.length,
+        posts:forum.posts,
       };
     });
 
     return simplifiedForums;
+
   }
 
   getForumById(id: string) {
