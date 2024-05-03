@@ -43,6 +43,7 @@ export class PostsService {
         },
         forum: {
           select: {
+            id:true,
             name: true,
             image: true,
             description: true,
@@ -100,6 +101,7 @@ export class PostsService {
         },
         forum: {
           select: {
+            id:true,
             name: true,
             image: true,
             description: true,
