@@ -69,9 +69,43 @@ export class PostsService {
       where: {
         id,
       },
-      include: {
-        votes: true,
-        comments: true,
+      select: {
+        title: true,
+        id: true,
+        content: true,
+        image: true,
+        createdAt: true,
+        comments: {
+          select: {
+            text: true,
+            author: {
+              select: {
+                username: true,
+                image: true,
+              },
+            },
+            createdAt: true,
+          },
+        },
+        votes: {
+          select: {
+            type: true,
+          },
+        },
+        author: {
+          select: {
+            username: true,
+            image: true,
+          },
+        },
+        forum: {
+          select: {
+            name: true,
+            image: true,
+            description: true,
+            _count: true,
+          },
+        },
       },
     });
   }

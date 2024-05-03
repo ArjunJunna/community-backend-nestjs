@@ -36,8 +36,7 @@ export class PostsController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getUserById(@Param('id') id: string) {
+  async getPostById(@Param('id') id: string) {
     const post = await this.postsService.getPostById(id);
     if (!post) throw new HttpException('Post Not Found', 404);
     return post;
@@ -45,7 +44,7 @@ export class PostsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  updateUserById(
+  updatePostById(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
@@ -54,7 +53,7 @@ export class PostsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  deleteUserById(@Param('id') id: string) {
+  deletePostById(@Param('id') id: string) {
     return this.postsService.deletePostById(id);
   }
 
