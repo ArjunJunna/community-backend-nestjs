@@ -2,19 +2,32 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 export const roundsOfHashing = 10;
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async createUser(data: Prisma.UserCreateInput) {
     const hashedPassword = await bcrypt.hash(data.password, roundsOfHashing);
 
     data.password = hashedPassword;
-    return this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data,
     });
+
+    const userDetails = await this.prisma.user.findUnique({
+      where: {
+        username: newUser.username,
+      },
+    });
+    const { password, ...user } = userDetails;
+    const token= this.jwtService.sign(user);
+    return {...user,token}
   }
 
   getUsers() {
@@ -64,12 +77,13 @@ export class UsersService {
   }
 
   async getAllSubscriptionsByUserId(userId: string) {
-    const subscriptions= await this.prisma.subscription.findMany({
+    const subscriptions = await this.prisma.subscription.findMany({
       where: {
         userId,
       },
     });
-    if(subscriptions.length==0) throw new HttpException('User has no subscriptions',400)
+    if (subscriptions.length == 0)
+      throw new HttpException('User has no subscriptions', 400);
     const subscriptionsWithForumDetails = await Promise.all(
       subscriptions.map(async (subscription) => {
         const forum = await this.prisma.forum.findUnique({
@@ -77,7 +91,7 @@ export class UsersService {
             id: subscription.forumId,
           },
         });
-        return forum
+        return forum;
       }),
     );
 
