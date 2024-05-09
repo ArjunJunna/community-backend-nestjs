@@ -11,7 +11,7 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
-  
+
   async createUser(data: Prisma.UserCreateInput) {
     try {
       const existingUser = await this.prisma.user.findFirst({
@@ -42,7 +42,7 @@ export class UsersService {
       const token = this.jwtService.sign(user);
       return { ...user, token };
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -59,15 +59,19 @@ export class UsersService {
     });
   }
 
-  getUserById(id: string) {
+   getUserById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
-      include: {
-        comment: true,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        image: true,
         createdForums: true,
-        post: true,
         subscriptions: true,
         votes: true,
+        post: true,
+        comment: true,
         commentVote: true,
       },
     });
