@@ -8,7 +8,7 @@ import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 export class ForumService {
   constructor(private prisma: PrismaService) {}
 
-  async createForum({ name, creatorId }: CreateForumDto) {
+  async createForum({ name, creatorId ,description,image}: CreateForumDto) {
     const forumExists = await this.prisma.forum.findFirst({
       where: {
         name,
@@ -21,6 +21,8 @@ export class ForumService {
       data: {
         name,
         creatorId,
+        description,
+        image,
       },
     });
 

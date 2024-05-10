@@ -9,4 +9,12 @@ export class CreateForumDto {
   @IsString()
   @IsNotEmpty()
   creatorId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  image: string;
 }
