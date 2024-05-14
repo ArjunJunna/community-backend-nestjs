@@ -61,6 +61,7 @@ export class PostsService {
         content: data.content,
         authorId: data.authorId,
         forumId: data.forumId,
+        image:data.image
       },
     });
   }

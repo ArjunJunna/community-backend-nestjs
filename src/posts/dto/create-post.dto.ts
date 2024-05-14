@@ -13,4 +13,8 @@ export class CreatePostDto {
 
   @IsString()
   forumId: string;
+
+  @IsString()
+  @IsOptional()
+  image:string
 }
