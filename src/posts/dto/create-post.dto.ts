@@ -1,10 +1,10 @@
-import {  IsOptional, IsString } from 'class-validator';
+import {  IsOptional, IsString ,IsJSON} from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
   title: string;
 
-  @IsString()
+  @IsJSON()
   @IsOptional()
   content: string;
 
