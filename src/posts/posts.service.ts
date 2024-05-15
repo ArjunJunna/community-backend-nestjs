@@ -43,7 +43,7 @@ export class PostsService {
         },
         forum: {
           select: {
-            id:true,
+            id: true,
             name: true,
             image: true,
             description: true,
@@ -61,7 +61,7 @@ export class PostsService {
         content: data.content,
         authorId: data.authorId,
         forumId: data.forumId,
-        image:data.image
+        image: data.image,
       },
     });
   }
@@ -102,7 +102,7 @@ export class PostsService {
         },
         forum: {
           select: {
-            id:true,
+            id: true,
             name: true,
             image: true,
             description: true,
@@ -137,9 +137,19 @@ export class PostsService {
       },
     });
 
-    if (existingVote) {
+    if (existingVote && existingVote.type == 'UP') {
       throw new HttpException('User has already upvoted this post.', 409);
     } else {
+      if (existingVote && existingVote.type == 'DOWN') {
+        await this.prisma.vote.delete({
+          where: {
+            userId_postId: {
+              userId,
+              postId,
+            },
+          },
+        });
+      }
       await this.prisma.vote.create({
         data: {
           user: { connect: { id: userId } },
