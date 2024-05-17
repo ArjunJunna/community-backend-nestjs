@@ -15,6 +15,7 @@ import { CreateForumDto } from './dtos/CreateForum.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
+import { ToggleSubscriptionDto } from './dtos/ToggleSubscription.dto';
 
 @Controller('forums')
 export class ForumController {
@@ -46,6 +47,16 @@ export class ForumController {
   return this.forumService.deleteForumById(id); 
   }
   */
+
+  @Post(':forumId/subscription')
+  @UseGuards(JwtAuthGuard)
+  async toggleSubscription(
+    @Body() toggleSubscriptionDto: ToggleSubscriptionDto,
+    @Param('forumId') forumId: string,
+  ) {
+    return this.forumService.toggleSubscription(toggleSubscriptionDto, forumId);
+  }
+
   @Post(':forumId/subscribe')
   @UseGuards(JwtAuthGuard)
   async subscribeToForum(
@@ -55,7 +66,7 @@ export class ForumController {
     return this.forumService.subscribeUserToForum(subscribeToForumDto, forumId);
   }
 
-  @Delete(':forumId/subscribe')
+  @Delete(':forumId/unsubscribe')
   @UseGuards(JwtAuthGuard)
   async unsubscribeFromForum(
     @Body() unsubscribeFromForumDto: UnsubscribeFromForumDto,
