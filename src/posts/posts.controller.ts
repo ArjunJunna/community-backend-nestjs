@@ -25,8 +25,8 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getAllPosts(){
-    return this.postsService.getAllPosts()
+  getAllPosts() {
+    return this.postsService.getAllPosts();
   }
 
   @Post()
@@ -40,6 +40,12 @@ export class PostsController {
     const post = await this.postsService.getPostById(id);
     if (!post) throw new HttpException('Post Not Found', 404);
     return post;
+  }
+
+  @Get('/custom/:id')
+  @UseGuards(JwtAuthGuard)
+  async getAllCustomPosts(@Param('id') id: string) {
+    return this.postsService.getAllCustomPosts(id);
   }
 
   @Patch(':id')

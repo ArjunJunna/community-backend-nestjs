@@ -113,6 +113,36 @@ export class PostsService {
     });
   }
 
+  async getAllCustomPosts(id:string){
+    const subscribedForums=await this.prisma.subscription.findMany({
+      where:{
+        userId:id
+      },
+      include:{
+        forum:true
+      }
+    })
+     const customPosts = await this.prisma.post.findMany({
+       where: {
+         forum: {
+           name: {
+             in: subscribedForums.map((sub) => sub.forum.name),
+           },
+         },
+       },
+       orderBy: {
+         createdAt: 'desc',
+       },
+       include: {
+         votes: true,
+         author: true,
+         comments: true,
+         forum: true,
+       },
+     });
+     return customPosts
+  }
+
   async deletePostById(id: string) {
     const findPost = await this.getPostById(id);
     if (!findPost) throw new HttpException('Post not found', 404);
