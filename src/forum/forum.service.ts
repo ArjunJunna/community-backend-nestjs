@@ -124,6 +124,15 @@ export class ForumService {
                 image: true,
               },
             },
+            forum: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                description: true,
+                _count: true,
+              },
+            },
           },
         },
         subscribers: true,
