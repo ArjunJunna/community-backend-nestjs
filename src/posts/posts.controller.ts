@@ -75,6 +75,12 @@ export class PostsController {
     return this.postsService.downvotePost(id, castVoteDto, VoteType.DOWN);
   }
 
+  @Get(':id/comments')
+  @UseGuards(JwtAuthGuard)
+  getAllCommentsOfPost(@Param('id') id: string) {
+    return this.postsService.getAllCommentsOnPostById(id)
+  }
+
   @Post(':id/comment')
   @UseGuards(JwtAuthGuard)
   createComment(

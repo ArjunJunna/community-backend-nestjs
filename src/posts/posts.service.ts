@@ -113,34 +113,34 @@ export class PostsService {
     });
   }
 
-  async getAllCustomPosts(id:string){
-    const subscribedForums=await this.prisma.subscription.findMany({
-      where:{
-        userId:id
+  async getAllCustomPosts(id: string) {
+    const subscribedForums = await this.prisma.subscription.findMany({
+      where: {
+        userId: id,
       },
-      include:{
-        forum:true
-      }
-    })
-     const customPosts = await this.prisma.post.findMany({
-       where: {
-         forum: {
-           name: {
-             in: subscribedForums.map((sub) => sub.forum.name),
-           },
-         },
-       },
-       orderBy: {
-         createdAt: 'desc',
-       },
-       include: {
-         votes: true,
-         author: true,
-         comments: true,
-         forum: true,
-       },
-     });
-     return customPosts
+      include: {
+        forum: true,
+      },
+    });
+    const customPosts = await this.prisma.post.findMany({
+      where: {
+        forum: {
+          name: {
+            in: subscribedForums.map((sub) => sub.forum.name),
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        votes: true,
+        author: true,
+        comments: true,
+        forum: true,
+      },
+    });
+    return customPosts;
   }
 
   async deletePostById(id: string) {
@@ -238,6 +238,7 @@ export class PostsService {
   }
 
   createCommentToPost(postId: string, data: CreateCommentDto) {
+    console.log('post comment data', data, postId);
     return this.prisma.comment.create({
       data: {
         postId,
@@ -260,6 +261,39 @@ export class PostsService {
     return this.prisma.comment.delete({
       where: {
         id: commentId,
+      },
+    });
+  }
+
+  getAllCommentsOnPostById(postId: string) {
+    return this.prisma.comment.findMany({
+      where: {
+        postId,
+        replyToId: null,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            image: true,
+          },
+        },
+        votes: true,
+        replies: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                image: true,
+              },
+            },
+            votes: true,
+          },
+        },
       },
     });
   }
