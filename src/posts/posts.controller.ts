@@ -104,4 +104,16 @@ export class PostsController {
   deleteCommentById(@Param('commentId') id: string) {
     return this.postsService.deleteCommentById(id);
   }
+
+  @Post('comment/:id/vote')
+  @UseGuards(JwtAuthGuard)
+  upvoteComment(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
+    return this.postsService.upvoteComment(id, castVoteDto, VoteType.UP);
+  }
+
+  @Delete('comment/:id/vote')
+  @UseGuards(JwtAuthGuard)
+  downvoteComment(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
+    return this.postsService.downvoteComment(id, castVoteDto, VoteType.DOWN);
+  }
 }

@@ -297,4 +297,85 @@ export class PostsService {
       },
     });
   }
+  async upvoteComment(commentId: string, data: CastVoteDto, type: VoteType) {
+    const { userId } = data;
+
+    const existingVote = await this.prisma.commentVote.findUnique({
+      where: {
+        userId_commentId: {
+          userId,
+          commentId,
+        },
+      },
+    });
+
+    if (existingVote && existingVote.type == 'UP') {
+      throw new HttpException('User has already upvoted this comment.', 409);
+    } else {
+      if (existingVote && existingVote.type == 'DOWN') {
+        await this.prisma.commentVote.delete({
+          where: {
+            userId_commentId: {
+              userId,
+              commentId,
+            },
+          },
+        });
+      }
+      await this.prisma.commentVote.create({
+        data: {
+          user: { connect: { id: userId } },
+          comment: { connect: { id: commentId } },
+          type,
+        },
+      });
+    }
+
+    const votes = await this.prisma.commentVote.findMany({
+      where: {
+        commentId,
+      },
+    });
+
+    return votes;
+  }
+
+  async downvoteComment(commentId: string, data: CastVoteDto, type: VoteType) {
+    const { userId } = data;
+
+    const existingVote = await this.prisma.commentVote.findUnique({
+      where: {
+        userId_commentId: {
+          userId,
+          commentId,
+        },
+      },
+    });
+
+    if (existingVote) {
+      await this.prisma.commentVote.delete({
+        where: {
+          userId_commentId: {
+            userId,
+            commentId,
+          },
+        },
+      });
+      await this.prisma.commentVote.create({
+        data: {
+          user: { connect: { id: userId } },
+          comment: { connect: { id: commentId } },
+          type,
+        },
+      });
+    }
+
+    const votes = await this.prisma.commentVote.findMany({
+      where: {
+        commentId,
+      },
+    });
+
+    return votes;
+  }
 }
