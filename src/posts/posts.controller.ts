@@ -18,7 +18,6 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { VoteType } from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -90,30 +89,4 @@ export class PostsController {
     return this.postsService.createCommentToPost(id, createCommentDto);
   }
 
-  @Patch('comment/:commentId')
-  @UseGuards(JwtAuthGuard)
-  updateCommentById(
-    @Param('commentId') id: string,
-    @Body() updateCommentDto: UpdateCommentDto,
-  ) {
-    return this.postsService.updateCommentById(id, updateCommentDto);
-  }
-
-  @Delete('comment/:commentId')
-  @UseGuards(JwtAuthGuard)
-  deleteCommentById(@Param('commentId') id: string) {
-    return this.postsService.deleteCommentById(id);
-  }
-
-  @Post('comment/:id/vote')
-  @UseGuards(JwtAuthGuard)
-  upvoteComment(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
-    return this.postsService.upvoteComment(id, castVoteDto, VoteType.UP);
-  }
-
-  @Delete('comment/:id/vote')
-  @UseGuards(JwtAuthGuard)
-  downvoteComment(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
-    return this.postsService.downvoteComment(id, castVoteDto, VoteType.DOWN);
-  }
 }
