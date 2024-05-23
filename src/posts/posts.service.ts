@@ -243,6 +243,7 @@ export class PostsService {
         postId,
         authorId: data.authorId,
         text: data.text,
+        replyToId: data.replyToId || null,
       },
     });
   }
