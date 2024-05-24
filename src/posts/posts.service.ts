@@ -1,15 +1,23 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { Prisma, VoteType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class PostsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
+  ) {}
 
-  getAllPosts() {
+  async getAllPosts() {
+    const postsData = await this.retrieveAllPosts();
+    return postsData;
+  }
+  async retrieveAllPosts() {
     return this.prisma.post.findMany({
       select: {
         title: true,

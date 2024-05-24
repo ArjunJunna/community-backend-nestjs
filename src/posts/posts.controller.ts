@@ -10,6 +10,7 @@ import {
   UseGuards,
   Patch,
   Delete,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -18,11 +19,14 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { VoteType } from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
+@UseInterceptors(CacheInterceptor)
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @CacheTTL(60*1000)
   @Get()
   getAllPosts() {
     return this.postsService.getAllPosts();

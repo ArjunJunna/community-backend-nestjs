@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -16,7 +17,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
 import { ToggleSubscriptionDto } from './dtos/ToggleSubscription.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
+@UseInterceptors(CacheInterceptor)
 @Controller('forums')
 export class ForumController {
   constructor(private forumService: ForumService) {}
@@ -28,6 +31,7 @@ export class ForumController {
     return this.forumService.createForum(createForumDto);
   }
 
+  @CacheTTL(60 * 1000)
   @Get()
   getForums() {
     return this.forumService.getForums();

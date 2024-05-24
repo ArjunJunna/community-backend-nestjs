@@ -1,13 +1,17 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateForumDto } from './dtos/CreateForum.dto';
 import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
 import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 import { ToggleSubscriptionDto } from './dtos/ToggleSubscription.dto';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ForumService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
+  ) {}
 
   async createForum({ name, creatorId, description, image }: CreateForumDto) {
     const forumExists = await this.prisma.forum.findFirst({
@@ -38,6 +42,11 @@ export class ForumService {
   }
 
   async getForums() {
+  const forumsData=await this.retrieveAllForums();
+  return forumsData;
+  }
+
+  async retrieveAllForums(){
     const forums = await this.prisma.forum.findMany({
       include: {
         subscribers: true,
