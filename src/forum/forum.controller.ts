@@ -6,6 +6,7 @@ import {
   HttpException,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -35,6 +36,17 @@ export class ForumController {
   @Get()
   getForums() {
     return this.forumService.getForums();
+  }
+
+  @CacheTTL(60 * 1000)
+  @Get('search')
+  async findForumsByName(@Query('q') q: string) {
+    if (!q) {
+      throw new HttpException('Invalid Query', 404);
+    } else {
+      const searchResult = await this.forumService.findForumsByName(q);
+      return searchResult;
+    }
   }
 
   @Get(':id')

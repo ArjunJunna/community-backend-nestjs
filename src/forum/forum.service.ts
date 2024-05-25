@@ -42,11 +42,11 @@ export class ForumService {
   }
 
   async getForums() {
-  const forumsData=await this.retrieveAllForums();
-  return forumsData;
+    const forumsData = await this.retrieveAllForums();
+    return forumsData;
   }
 
-  async retrieveAllForums(){
+  async retrieveAllForums() {
     const forums = await this.prisma.forum.findMany({
       include: {
         subscribers: true,
@@ -97,6 +97,25 @@ export class ForumService {
     });
 
     return simplifiedForums;
+  }
+
+  async findForumsByName(query: string) {
+    const forumsSearch = await this.retrieveForumsOnSearch(query);
+    return forumsSearch;
+  }
+
+  async retrieveForumsOnSearch(query: string) {
+    return this.prisma.forum.findMany({
+      where: {
+        name: {
+          startsWith: query,
+        },
+      },
+      include: {
+        _count: true,
+      },
+      take: 5,
+    });
   }
 
   getForumById(id: string) {
