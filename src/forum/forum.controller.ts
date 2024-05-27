@@ -50,7 +50,6 @@ export class ForumController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   async getForumById(@Param('id') id: string) {
     const forum = await this.forumService.getForumById(id);
     if (!forum) throw new HttpException('Forum Not Found', 404);
