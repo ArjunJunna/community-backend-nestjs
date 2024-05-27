@@ -141,10 +141,38 @@ export class PostsService {
         createdAt: 'desc',
       },
       include: {
-        votes: true,
-        author: true,
-        comments: true,
-        forum: true,
+        votes: {
+          select: {
+            type: true,
+          },
+        },
+        author: {
+          select: {
+            username: true,
+            image: true,
+          },
+        },
+        comments: {
+          select: {
+            text: true,
+            author: {
+              select: {
+                username: true,
+                image: true,
+              },
+            },
+            createdAt: true,
+          },
+        },
+        forum: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            description: true,
+            _count: true,
+          },
+        },
       },
     });
     return customPosts;
