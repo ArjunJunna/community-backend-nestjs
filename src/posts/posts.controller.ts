@@ -79,7 +79,6 @@ export class PostsController {
   }
 
   @Get(':id/comments')
-  @UseGuards(JwtAuthGuard)
   getAllCommentsOfPost(@Param('id') id: string) {
     return this.postsService.getAllCommentsOnPostById(id)
   }
