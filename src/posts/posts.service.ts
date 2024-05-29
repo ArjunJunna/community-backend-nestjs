@@ -85,15 +85,33 @@ export class PostsService {
         image: true,
         createdAt: true,
         comments: {
-          select: {
-            text: true,
+          where: {
+            postId: id,
+            replyToId: null,
+          },
+          include: {
             author: {
               select: {
+                id: true,
                 username: true,
+                email: true,
                 image: true,
               },
             },
-            createdAt: true,
+            votes: true,
+            replies: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    image: true,
+                  },
+                },
+                votes: true,
+              },
+            },
           },
         },
         votes: {
