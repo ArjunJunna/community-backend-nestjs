@@ -12,6 +12,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { VoteType } from '@prisma/client';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { DeleteCommentDto } from './dto/delete-comment.dto';
 
 @Controller('comments')
 export class CommentsController {
@@ -28,8 +29,11 @@ export class CommentsController {
 
   @Delete(':commentId')
   @UseGuards(JwtAuthGuard)
-  deleteCommentById(@Param('commentId') id: string) {
-    return this.commentsService.deleteCommentById(id);
+  deleteCommentById(
+    @Param('commentId') id: string,
+    @Body() deleteCommentDto: DeleteCommentDto,
+  ) {
+    return this.commentsService.deleteCommentById(id,deleteCommentDto);
   }
 
   @Post(':commentId/vote')
@@ -42,6 +46,5 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   downvoteComment(@Param('commentId') id: string, @Body() castVoteDto: CastVoteDto) {
     return this.commentsService.downvoteComment(id, castVoteDto, VoteType.DOWN);
-  
   }
 }

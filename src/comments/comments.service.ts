@@ -3,6 +3,7 @@ import { VoteType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
+import { DeleteCommentDto } from './dto/delete-comment.dto';
 
 @Injectable()
 export class CommentsService {
@@ -17,12 +18,29 @@ export class CommentsService {
     });
   }
 
-  deleteCommentById(commentId: string) {
-    return this.prisma.comment.delete({
-      where: {
-        id: commentId,
-      },
-    });
+  async deleteCommentById(commentId: string,{userId}:DeleteCommentDto) {
+     const comment = await this.prisma.comment.findUnique({
+       where: {
+         id: commentId,
+       },
+       select: {
+         authorId: true,
+       },
+     });
+
+     if (!comment) {
+        throw new HttpException('Comment not found.', 404);
+     }
+
+     if (comment.authorId !== userId) {
+        throw new HttpException('User not authorized to delete this comment.', 401);
+     }
+
+     return this.prisma.comment.delete({
+       where: {
+         id: commentId,
+       },
+     });
   }
 
 
