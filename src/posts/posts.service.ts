@@ -40,6 +40,7 @@ export class PostsService {
         votes: {
           select: {
             type: true,
+            userId: true,
           },
         },
         author: {
@@ -220,10 +221,8 @@ export class PostsService {
       },
     });
 
-    if (existingVote && existingVote.type == 'UP') {
-      throw new HttpException('User has already upvoted this post.', 409);
-    } else {
-      if (existingVote && existingVote.type == 'DOWN') {
+    if (existingVote) {
+      if (existingVote.type === 'UP') {
         await this.prisma.vote.delete({
           where: {
             userId_postId: {
@@ -232,12 +231,25 @@ export class PostsService {
             },
           },
         });
+      } else if (existingVote.type === 'DOWN') {
+        await this.prisma.vote.update({
+          where: {
+            userId_postId: {
+              userId,
+              postId,
+            },
+          },
+          data: {
+            type,
+          },
+        });
       }
+    } else {
       await this.prisma.vote.create({
         data: {
           user: { connect: { id: userId } },
           post: { connect: { id: postId } },
-          type,
+          type
         },
       });
     }
@@ -264,19 +276,34 @@ export class PostsService {
     });
 
     if (existingVote) {
-      await this.prisma.vote.delete({
-        where: {
-          userId_postId: {
-            userId,
-            postId,
+      if (existingVote.type === 'DOWN') {
+        await this.prisma.vote.delete({
+          where: {
+            userId_postId: {
+              userId,
+              postId,
+            },
           },
-        },
-      });
+        });
+      } else if (existingVote.type === 'UP') {
+        await this.prisma.vote.update({
+          where: {
+            userId_postId: {
+              userId,
+              postId,
+            },
+          },
+          data: {
+            type
+          },
+        });
+      }
+    } else {
       await this.prisma.vote.create({
         data: {
           user: { connect: { id: userId } },
           post: { connect: { id: postId } },
-          type,
+          type
         },
       });
     }
