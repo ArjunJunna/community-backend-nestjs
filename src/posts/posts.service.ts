@@ -209,6 +209,19 @@ export class PostsService {
     return this.prisma.post.update({ where: { id }, data });
   }
 
+  async getAllVotesByPostId(postId: string) {
+    const findPost = await this.getPostById(postId);
+    if (!findPost) throw new HttpException('Post Not Found', 404);
+    return this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        votes: true,
+      },
+    });
+  }
+
   async upvotePost(postId: string, data: CastVoteDto, type: VoteType) {
     const { userId } = data;
 
@@ -249,7 +262,7 @@ export class PostsService {
         data: {
           user: { connect: { id: userId } },
           post: { connect: { id: postId } },
-          type
+          type,
         },
       });
     }
@@ -294,7 +307,7 @@ export class PostsService {
             },
           },
           data: {
-            type
+            type,
           },
         });
       }
@@ -303,7 +316,7 @@ export class PostsService {
         data: {
           user: { connect: { id: userId } },
           post: { connect: { id: postId } },
-          type
+          type,
         },
       });
     }

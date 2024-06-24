@@ -66,6 +66,11 @@ export class PostsController {
     return this.postsService.deletePostById(id);
   }
 
+  @Get(':postId/votes')
+  async getAllVotesByPostId(@Param('postId') postId: string) {
+    return this.postsService.getAllVotesByPostId(postId);
+  }
+
   @Post(':id/upvote')
   @UseGuards(JwtAuthGuard)
   upvotePost(@Param('id') id: string, @Body() castVoteDto: CastVoteDto) {
