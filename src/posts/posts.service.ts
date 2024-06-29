@@ -355,9 +355,15 @@ export class PostsService {
     return votes;
   }
 
-  createCommentToPost(postId: string, data: CreateCommentDto) {
+  async createCommentToPost(postId: string, data: CreateCommentDto) {
     console.log('post comment data', data, postId);
-    return this.prisma.comment.create({
+    const {authorId}=data;
+    const postDetails = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+    const createdComment = this.prisma.comment.create({
       data: {
         postId,
         authorId: data.authorId,
@@ -365,6 +371,18 @@ export class PostsService {
         replyToId: data.replyToId || null,
       },
     });
+    if (createdComment) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: authorId },
+        select: {
+          username: true,
+        },
+      });
+      this.notificationsGateway.sendNotificationToUser(postDetails.authorId, {
+        message: `${toPascalCase(user?.username)} just added a comment on your post.`,
+        postId: postId,
+      });
+    }
   }
 
   getAllCommentsOnPostById(postId: string) {
