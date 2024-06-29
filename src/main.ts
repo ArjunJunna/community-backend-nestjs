@@ -7,7 +7,16 @@ import { corsOptions } from './config/corsOptions';
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
-
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'https://zodiac-hub.vercel.app',
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  });
   const config = new DocumentBuilder()
     .setTitle('Community App')
     .setDescription('The Community API description')

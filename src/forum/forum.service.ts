@@ -5,11 +5,13 @@ import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
 import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 import { ToggleSubscriptionDto } from './dtos/ToggleSubscription.dto';
 import { Cache } from 'cache-manager';
+import { NotificationsGateway } from 'src/notification/notification-gateway';
 
 @Injectable()
 export class ForumService {
   constructor(
     private prisma: PrismaService,
+    private notificationsGateway: NotificationsGateway,
     @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
 
@@ -229,8 +231,20 @@ export class ForumService {
     toggleSubscriptionDto: ToggleSubscriptionDto,
     forumId: string,
   ) {
+    function toPascalCase(str) {
+      return str
+        .replace(/(\w)(\w*)/g, function (_, firstChar, restChars) {
+          return firstChar.toUpperCase() + restChars.toLowerCase();
+        })
+        .replace(/\s+/g, '');
+    }
     const { userId } = toggleSubscriptionDto;
-
+    const subscriber = await this.prisma.user.findUnique({
+      where: { id:userId },
+      select: {
+        username: true,
+      },
+    });
     const existingSubscription = await this.prisma.subscription.findUnique({
       where: {
         userId_forumId: {
@@ -251,13 +265,26 @@ export class ForumService {
       });
       return { message: 'Unsubscribed' };
     } else {
-      await this.prisma.subscription.create({
-        data: {
-          userId,
-          forumId,
-        },
-      });
-      return { message: 'Subscribed' };
+       const subscription = await this.prisma.subscription.create({
+         data: {
+           userId,
+           forumId,
+         },
+       });
+
+       const forum = await this.prisma.forum.findUnique({
+         where: { id: forumId },
+         select: { creatorId: true, name: true },
+       });
+
+       if (forum?.creatorId) {
+         this.notificationsGateway.sendNotificationToUser(forum.creatorId, {
+           message: `${toPascalCase(subscriber?.username)} subscribed to your forum ${forum?.name}`,
+           forumId: forumId,
+         });
+       }
+
+      return { message: 'Subscribed',subscription };
     }
   }
 }
