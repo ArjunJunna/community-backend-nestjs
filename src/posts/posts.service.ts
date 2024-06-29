@@ -5,11 +5,14 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { Cache } from 'cache-manager';
+import { NotificationsGateway } from 'src/notification/notification-gateway';
+import { toPascalCase } from 'src/utils';
 
 @Injectable()
 export class PostsService {
   constructor(
     private prisma: PrismaService,
+    private notificationsGateway: NotificationsGateway,
     @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
 
@@ -224,7 +227,23 @@ export class PostsService {
 
   async upvotePost(postId: string, data: CastVoteDto, type: VoteType) {
     const { userId } = data;
-
+    const notifyPostAuthor=async(userId:string)=>{
+       const user = await this.prisma.user.findUnique({
+         where: { id: userId },
+         select: {
+           username: true,
+         },
+       });
+       this.notificationsGateway.sendNotificationToUser(postDetails.authorId, {
+         message: `${toPascalCase(user?.username)} just upvoted your post.`,
+         postId: postId,
+       });
+    }
+    const postDetails = await this.prisma.post.findUnique({
+      where:{
+        id: postId,
+      }
+    })
     const existingVote = await this.prisma.vote.findUnique({
       where: {
         userId_postId: {
@@ -245,7 +264,7 @@ export class PostsService {
           },
         });
       } else if (existingVote.type === 'DOWN') {
-        await this.prisma.vote.update({
+        const response = await this.prisma.vote.update({
           where: {
             userId_postId: {
               userId,
@@ -256,15 +275,21 @@ export class PostsService {
             type,
           },
         });
+        if (response) {
+          await notifyPostAuthor(userId);
+        }
       }
     } else {
-      await this.prisma.vote.create({
+      const response = await this.prisma.vote.create({
         data: {
           user: { connect: { id: userId } },
           post: { connect: { id: postId } },
           type,
         },
       });
+       if (response) {
+          await notifyPostAuthor(userId);
+       }
     }
 
     const votes = await this.prisma.vote.findMany({

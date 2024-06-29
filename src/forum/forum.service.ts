@@ -6,6 +6,7 @@ import { SubscribeToForumDto } from './dtos/CreateSubscription.dto';
 import { ToggleSubscriptionDto } from './dtos/ToggleSubscription.dto';
 import { Cache } from 'cache-manager';
 import { NotificationsGateway } from 'src/notification/notification-gateway';
+import { toPascalCase } from 'src/utils';
 
 @Injectable()
 export class ForumService {
@@ -231,13 +232,7 @@ export class ForumService {
     toggleSubscriptionDto: ToggleSubscriptionDto,
     forumId: string,
   ) {
-    function toPascalCase(str) {
-      return str
-        .replace(/(\w)(\w*)/g, function (_, firstChar, restChars) {
-          return firstChar.toUpperCase() + restChars.toLowerCase();
-        })
-        .replace(/\s+/g, '');
-    }
+    
     const { userId } = toggleSubscriptionDto;
     const subscriber = await this.prisma.user.findUnique({
       where: { id:userId },
