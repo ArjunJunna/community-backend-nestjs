@@ -363,7 +363,7 @@ export class PostsService {
         id: postId,
       },
     });
-    const createdComment = this.prisma.comment.create({
+    const createdComment = await this.prisma.comment.create({
       data: {
         postId,
         authorId: data.authorId,
@@ -383,6 +383,7 @@ export class PostsService {
         postId: postId,
       });
     }
+    return createdComment;
   }
 
   getAllCommentsOnPostById(postId: string) {

@@ -4,10 +4,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CastVoteDto } from './dto/cast-vote.dto';
 import { DeleteCommentDto } from './dto/delete-comment.dto';
+import { NotificationsGateway } from 'src/notification/notification-gateway';
+import { toPascalCase } from 'src/utils';
 
 @Injectable()
 export class CommentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsGateway: NotificationsGateway,
+  ) {}
 
   updateCommentById(commentId: string, data: UpdateCommentDto) {
     return this.prisma.comment.update({
@@ -36,7 +41,7 @@ export class CommentsService {
         throw new HttpException('User not authorized to delete this comment.', 401);
      }
 
-     return this.prisma.comment.delete({
+     return await this.prisma.comment.delete({
        where: {
          id: commentId,
        },
@@ -46,6 +51,23 @@ export class CommentsService {
 
   async upvoteComment(commentId: string, data: CastVoteDto, type: VoteType) {
     const { userId } = data;
+    const notifyCommentAuthor = async (userId: string) => {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          username: true,
+        },
+      });
+      this.notificationsGateway.sendNotificationToUser(commentDetails.authorId, {
+        message: `${toPascalCase(user?.username)} just upvoted your comment.`,
+        commentId,
+      });
+    };
+     const commentDetails = await this.prisma.comment.findUnique({
+       where: {
+         id: commentId,
+       },
+     });
 
     const existingVote = await this.prisma.commentVote.findUnique({
       where: {
@@ -56,36 +78,51 @@ export class CommentsService {
       },
     });
 
-    if (existingVote && existingVote.type == 'UP') {
-      throw new HttpException('User has already upvoted this comment.', 409);
-    } else {
-      if (existingVote && existingVote.type == 'DOWN') {
-        await this.prisma.commentVote.delete({
-          where: {
-            userId_commentId: {
-              userId,
-              commentId,
-            },
-          },
-        });
-      }
-      await this.prisma.commentVote.create({
+    if (existingVote){
+       if (existingVote.type === 'UP') {
+         await this.prisma.commentVote.delete({
+           where: {
+             userId_commentId: {
+               userId,
+               commentId,
+             },
+           },
+         });
+       } else if (existingVote.type === 'DOWN') {
+           const response = await this.prisma.commentVote.update({
+             where: {
+               userId_commentId: {
+                 userId,
+                 commentId,
+               },
+             },
+             data: {
+               type,
+             },
+           });
+           if (response) {
+             await notifyCommentAuthor(userId);
+           }
+       }}else {
+      const response = await this.prisma.commentVote.create({
         data: {
           user: { connect: { id: userId } },
           comment: { connect: { id: commentId } },
           type,
         },
       });
+       if (response) {
+             await notifyCommentAuthor(userId);
+           }
     }
-
     const votes = await this.prisma.commentVote.findMany({
       where: {
-        commentId,
+        commentId
       },
     });
-
     return votes;
   }
+    
 
   async downvoteComment(commentId: string, data: CastVoteDto, type: VoteType) {
     const { userId } = data;
@@ -99,23 +136,38 @@ export class CommentsService {
       },
     });
 
-    if (existingVote) {
-      await this.prisma.commentVote.delete({
-        where: {
-          userId_commentId: {
-            userId,
-            commentId,
+      if (existingVote) {
+        if (existingVote.type === 'DOWN') {
+          await this.prisma.commentVote.delete({
+            where: {
+              userId_commentId: {
+                userId,
+                commentId,
+              },
+            },
+          });
+        } else if (existingVote.type === 'UP') {
+          await this.prisma.commentVote.update({
+            where: {
+              userId_commentId: {
+                userId,
+                commentId,
+              },
+            },
+            data: {
+              type,
+            },
+          });
+        }
+      } else {
+        await this.prisma.commentVote.create({
+          data: {
+            user: { connect: { id: userId } },
+            comment: { connect: { id: commentId } },
+            type,
           },
-        },
-      });
-      await this.prisma.commentVote.create({
-        data: {
-          user: { connect: { id: userId } },
-          comment: { connect: { id: commentId } },
-          type,
-        },
-      });
-    }
+        });
+      }
 
     const votes = await this.prisma.commentVote.findMany({
       where: {
