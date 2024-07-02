@@ -1,4 +1,10 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateForumDto } from './dtos/CreateForum.dto';
 import { UnsubscribeFromForumDto } from './dtos/DeleteSubscription.dto';
@@ -45,8 +51,12 @@ export class ForumService {
   }
 
   async getForums() {
-    const forumsData = await this.retrieveAllForums();
-    return forumsData;
+    try {
+      const forumsData = await this.retrieveAllForums();
+      return forumsData;
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving forums');
+    }
   }
 
   async retrieveAllForums() {
@@ -103,8 +113,12 @@ export class ForumService {
   }
 
   async findForumsByName(query: string) {
-    const forumsSearch = await this.retrieveForumsOnSearch(query);
-    return forumsSearch;
+    try {
+      const forumsSearch = await this.retrieveForumsOnSearch(query);
+      return forumsSearch;
+    } catch (error) {
+      throw new InternalServerErrorException('Error retrieving forums');
+    }
   }
 
   async retrieveForumsOnSearch(query: string) {
@@ -121,8 +135,8 @@ export class ForumService {
     });
   }
 
-  getForumById(id: string) {
-    return this.prisma.forum.findUnique({
+  async getForumById(id: string) {
+    const forumData = await this.prisma.forum.findUnique({
       where: { id },
       include: {
         posts: {
@@ -174,6 +188,12 @@ export class ForumService {
         },
       },
     });
+
+    if (!forumData) {
+      throw new NotFoundException(`Forum with id ${id} could not be found`);
+    }
+
+    return forumData;
   }
   /*
   async deleteForumById(id: string) {

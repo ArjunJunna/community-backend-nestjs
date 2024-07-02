@@ -51,9 +51,7 @@ export class ForumController {
 
   @Get(':id')
   async getForumById(@Param('id') id: string) {
-    const forum = await this.forumService.getForumById(id);
-    if (!forum) throw new HttpException('Forum Not Found', 404);
-    return forum;
+    return await this.forumService.getForumById(id);
   }
   /*
   @Delete(':id')

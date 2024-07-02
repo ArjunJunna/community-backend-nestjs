@@ -3,20 +3,20 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 import { corsOptions } from './config/corsOptions';
+import { HttpExceptionFilter } from './exception-filters/http-exception.filter';
 
 async function bootstrap() {
   dotenv.config();
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
       'https://zodiac-hub.vercel.app',
+      'https://zodiac-hub-app.onrender.com'
     ],
     methods: ['GET', 'POST'],
     credentials: true,
   });
+  app.useGlobalFilters(new HttpExceptionFilter());
   const config = new DocumentBuilder()
     .setTitle('Community App')
     .setDescription('The Community API description')
