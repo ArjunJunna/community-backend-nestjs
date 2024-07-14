@@ -11,7 +11,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://zodiac-hub.vercel.app',
-      'https://zodiac-hub-app.onrender.com'
+      'https://zodiac-hub-app.onrender.com',
+      'https://finifi-portal.vercel.app',
     ],
     methods: ['GET', 'POST'],
     credentials: true,
@@ -25,8 +26,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.enableCors(corsOptions)
-  app.setGlobalPrefix('api/v1')
+  app.enableCors(corsOptions);
+  app.setGlobalPrefix('api/v1');
   await app.listen(3000);
 }
 bootstrap();
